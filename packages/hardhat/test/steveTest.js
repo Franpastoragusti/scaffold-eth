@@ -125,23 +125,171 @@ describe("🚩 Challenge 3: ⚖️ 🪙 Simple DEX", function () {
         // could insert more tests to show the declining price, and what happens when the pool becomes very imbalanced.
       });
       describe("tokenToEth", async () => {
+        let startingDexBALBalanceFirstRound = 0;
+        let startingDexBALBalanceSecondRound = 0;
+        let finalDexBALBalanceFirstRound = 0;
+        let finalDexBALBalanceSecondRound = 0;
         it("Should send 1 $BAL to DEX in exchange for _ $ETH", async function () {
-          let tx1 = await dexContract
-            .connect(deployer.signer)
-            .tokenToEth(ethers.utils.parseEther("1"));
+          const startingDexETHBalance = await ethers.provider.getBalance(
+            dexContract.address
+          );
+          console.log(
+            "\t",
+            " ⚖️ Starting Dex ETH balance: ",
+            ethers.utils.formatEther(startingDexETHBalance)
+          );
 
-          //TODO: SYNTAX -  write an expect that takes into account the emitted event from tokenToETH.
+          const startingDexBALBalance = await balloonsContract.balanceOf(
+            dexContract.address
+          );
+          startingDexBALBalanceFirstRound = startingDexBALBalance;
+
+          console.log(
+            "\t",
+            " ⚖️ Starting Dex BAL balance: ",
+            ethers.utils.formatEther(startingDexBALBalance)
+          );
+
+          console.log("\t", " 🙄 Approving...");
+          const approveTokensResult = await balloonsContract.approve(
+            deployer.address,
+            ethers.utils.parseEther("1")
+          );
+          console.log(
+            "\t",
+            " 🏷  approveTokens Result Result: ",
+            approveTokensResult.hash
+          );
+
+          console.log("\t", " ⏳ Waiting for confirmation...");
+          const atxResult = await approveTokensResult.wait();
+          expect(atxResult.status).to.equal(1);
+
+          console.log("\t", " 🍾 tokenToEth...");
+          const tokenToEthResult = await dexContract.tokenToEth(
+            ethers.utils.parseEther("1")
+          );
+          console.log("\t", " 🏷  sellTokens Result: ", tokenToEthResult.hash);
+
+          console.log("\t", " ⏳ Waiting for confirmation...");
+          const txResult = await tokenToEthResult.wait();
+          expect(txResult.status).to.equal(1);
+
+          const newDexBALBalance = await balloonsContract.balanceOf(
+            dexContract.address
+          );
+          finalDexBALBalanceFirstRound = newDexBALBalance;
+          console.log(
+            "\t",
+            " 🔎 New BAL balance: ",
+            ethers.utils.formatEther(newDexBALBalance)
+          );
+          expect(newDexBALBalance).to.equal(
+            startingDexBALBalance.add(ethers.utils.parseEther("1"))
+          );
+
+          const newDexETHBalance = await ethers.provider.getBalance(
+            dexContract.address
+          );
+
+          console.log(
+            "\t",
+            " 🔎 New ETH balance: ",
+            ethers.utils.formatEther(newDexETHBalance)
+          );
+
+          expect(
+            parseFloat(ethers.utils.formatEther(startingDexETHBalance))
+          ).to.greaterThan(
+            parseFloat(ethers.utils.formatEther(newDexETHBalance))
+          );
         });
 
         it("Should send less tokens after the first trade (tokenToEach() called)", async function () {
-          await dexContract
-            .connect(deployer.signer)
-            .tokenToEth(ethers.utils.parseEther("1"));
-          let tx1 = await dexContract
-            .connect(deployer.signer)
-            .tokenToEth(ethers.utils.parseEther("1"));
+          const startingDexETHBalance = await ethers.provider.getBalance(
+            dexContract.address
+          );
+          console.log(
+            "\t",
+            " ⚖️ Starting Dex ETH balance: ",
+            ethers.utils.formatEther(startingDexETHBalance)
+          );
 
-          //TODO: SYNTAX - write an expect that takes into account the emitted event from tokenToETH.
+          const startingDexBALBalance = await balloonsContract.balanceOf(
+            dexContract.address
+          );
+          startingDexBALBalanceSecondRound = startingDexBALBalance;
+
+          console.log(
+            "\t",
+            " ⚖️ Starting Dex BAL balance: ",
+            ethers.utils.formatEther(startingDexBALBalance)
+          );
+
+          console.log("\t", " 🙄 Approving...");
+          const approveTokensResult = await balloonsContract.approve(
+            deployer.address,
+            ethers.utils.parseEther("1")
+          );
+          console.log(
+            "\t",
+            " 🏷  approveTokens Result Result: ",
+            approveTokensResult.hash
+          );
+
+          console.log("\t", " ⏳ Waiting for confirmation...");
+          const atxResult = await approveTokensResult.wait();
+          expect(atxResult.status).to.equal(1);
+
+          console.log("\t", " 🍾 tokenToEth...");
+          const tokenToEthResult = await dexContract.tokenToEth(
+            ethers.utils.parseEther("1")
+          );
+          console.log("\t", " 🏷  sellTokens Result: ", tokenToEthResult.hash);
+
+          console.log("\t", " ⏳ Waiting for confirmation...");
+          const txResult = await tokenToEthResult.wait();
+          expect(txResult.status).to.equal(1);
+
+          const newDexBALBalance = await balloonsContract.balanceOf(
+            dexContract.address
+          );
+          finalDexBALBalanceSecondRound = newDexBALBalance;
+          console.log(
+            "\t",
+            " 🔎 New BAL balance: ",
+            ethers.utils.formatEther(newDexBALBalance)
+          );
+          expect(newDexBALBalance).to.equal(
+            startingDexBALBalance.add(ethers.utils.parseEther("1"))
+          );
+
+          const newDexETHBalance = await ethers.provider.getBalance(
+            dexContract.address
+          );
+          console.log(
+            "\t",
+            " 🔎 New ETH balance: ",
+            ethers.utils.formatEther(newDexETHBalance)
+          );
+
+          expect(
+            parseFloat(ethers.utils.formatEther(startingDexETHBalance))
+          ).to.greaterThan(
+            parseFloat(ethers.utils.formatEther(newDexETHBalance))
+          );
+
+          let firstDiff =
+            parseFloat(
+              ethers.utils.formatEther(startingDexBALBalanceFirstRound)
+            ) -
+            parseFloat(ethers.utils.formatEther(finalDexBALBalanceFirstRound));
+          let secondDiff =
+            parseFloat(
+              ethers.utils.formatEther(startingDexBALBalanceSecondRound)
+            ) -
+            parseFloat(ethers.utils.formatEther(finalDexBALBalanceSecondRound));
+          expect(secondDiff).to.greaterThan(firstDiff);
         });
       });
 
